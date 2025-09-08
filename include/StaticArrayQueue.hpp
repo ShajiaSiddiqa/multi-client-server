@@ -2,11 +2,11 @@
 #ifndef STATIC_ARRAY_QUEUE_HPP
 #define STATIC_ARRAY_QUEUE_HPP
 
+#include <mutex>
+#include <cstddef> 
 #include<iostream>
 #include <stdexcept> 
 #include"IQueue.hpp"
-#include <cstddef> 
-
 using namespace std;
 
 template<typename T>
@@ -18,6 +18,7 @@ private:
     size_t size;
     size_t front;
     size_t rear;
+    mutex mtx;
 
 public:
     StaticArrayQueue() = delete;
@@ -71,24 +72,28 @@ public:
     }
     void enqueue(const T& val) override
     {
+        std::lock_guard<std::mutex> lock(mtx);
         if (isFull())
-            throw overflow_error("Queue overflow: cannot enqueue, queue is full");
-        
+            throw std::overflow_error("Queue overflow");
         arr[rear++] = val;
         size++;
     }
     T dequeue() override
     {
+        std::lock_guard<std::mutex> lock(mtx);
         if (isEmpty())
-            throw underflow_error("Queue underflow: cannot dequeue, queue is empty");
-
+            throw std::underflow_error("Queue underflow");
         size--;
-        return this->arr[front++];
+        return arr[front++];
     }
+
     bool try_enqueue(const T& val) override 
     {
+        lock_guard<mutex> lock(mtx);
         if (isFull())
+        {
             return false;
+        }
         arr[rear++] = val;
         size++;
         return true;
@@ -96,12 +101,14 @@ public:
 
     bool try_dequeue(T& out) override 
     {
+        lock_guard<mutex> lock(mtx);
         if (isEmpty())
             return false;
         out = arr[front++];
         size--;
         return true;
     }
+
     T peek() const override
     {
         if (isEmpty()) 

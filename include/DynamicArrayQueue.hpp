@@ -2,12 +2,12 @@
 #ifndef DYNAMIC_ARRAY_QUEUE_HPP
 #define DYNAMIC_ARRAY_QUEUE_HPP
 
+#include <mutex>
 #include <vector>
+#include <cstddef> 
 #include<iostream>
 #include <stdexcept> 
 #include"IQueue.hpp"
-#include <cstddef> 
-
 using namespace std;
 
 template<typename T>
@@ -19,7 +19,8 @@ private:
     size_t rear;
     size_t size;
     size_t capacity;
-
+    mutex mtx;
+    
     void Resize()
     {
         capacity *=2;
@@ -67,6 +68,7 @@ public:
     }
     void enqueue(const T& val) override
     {
+        std::lock_guard<std::mutex> lock(mtx);
         if (size == capacity)
         {
             Resize();
@@ -78,16 +80,18 @@ public:
     }
     bool try_enqueue(const T& val) override
     {
+        std::lock_guard<std::mutex> lock(mtx);
         if (size == capacity)
             return false;
 
         buffer[rear] = val;
         rear = (rear + 1) % capacity;
         ++size;
-        return true;
+        return true; 
     }
     T dequeue() override
     {
+        std::lock_guard<std::mutex> lock(mtx); 
         if (isEmpty())
             throw underflow_error("Queue is empty");
 
@@ -95,9 +99,11 @@ public:
         front = (front + 1) % capacity;
         --size;
         return value;
+         
     }
     bool try_dequeue(T& out) override
     {
+        std::lock_guard<std::mutex> lock(mtx);
         if (isEmpty())
             return false;
 
@@ -105,6 +111,7 @@ public:
         front = (front + 1) % capacity;
         --size;
         return true;
+        
     }
     void display() const 
     {

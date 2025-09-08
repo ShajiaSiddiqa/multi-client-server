@@ -1,10 +1,11 @@
 #ifndef CIRCULAR_QUEUE_HPP
 #define CIRCULAR_QUEUE_HPP
 
+#include <mutex>
+#include <cstddef> 
 #include <iostream>
 #include <stdexcept>
 #include "IQueue.hpp"
-#include <cstddef> 
 using namespace std;
 
 template<typename T>
@@ -16,6 +17,7 @@ private:
     size_t rear;
     size_t capacity;
     size_t size;
+    mutex mtx;
 
 public:
     CircularQueue() = delete;
@@ -73,16 +75,19 @@ public:
 
     void enqueue(const T& val) override
     {
+        std::lock_guard<std::mutex> lock(mtx);
         if (isFull())
             throw overflow_error("Queue is full");
 
         buffer[rear] = val;
         rear = (rear + 1) % capacity;
         ++size;
+      
     }
 
     T dequeue() override
     {
+        std::lock_guard<std::mutex> lock(mtx);
         if (isEmpty())
             throw underflow_error("Queue is empty");
 
@@ -90,10 +95,12 @@ public:
         front = (front + 1) % capacity;
         --size;
         return value;
+        
     }
 
     bool try_enqueue(const T& val) override
     {
+        std::lock_guard<std::mutex> lock(mtx);
         if (isFull())
             return false;
 
@@ -101,10 +108,12 @@ public:
         rear = (rear + 1) % capacity;
         ++size;
         return true;
+       
     }
 
     bool try_dequeue(T& out) override
     {
+        std::lock_guard<std::mutex> lock(mtx);
         if (isEmpty())
             return false;
 
@@ -112,9 +121,10 @@ public:
         front = (front + 1) % capacity;
         --size;
         return true;
+      
     }
 
-    void display() const
+    void display() const 
     {
         if (isEmpty())
         {

@@ -20,7 +20,7 @@ private:
     size_t front;
     size_t rear;
 
-    mutable mutex mtx;
+    mutex mtx;
     condition_variable not_full;
     condition_variable not_empty;
 
@@ -91,7 +91,7 @@ public:
 
     T peek() const override
     {
-        unique_lock<mutex> lock(mtx);
+        // unique_lock<mutex> lock(mtx);
         if (size == 0)
             throw underflow_error("Queue is empty: cannot peek");
 
@@ -100,13 +100,13 @@ public:
 
     bool isEmpty() const override
     {
-        lock_guard<mutex> lock(mtx);
+        // lock_guard<mutex> lock(mtx);
         return size == 0;
     }
 
     size_t getSize() const override
     {
-        lock_guard<mutex> lock(mtx);
+        // lock_guard<mutex> lock(mtx);
         return size;
     }
 
@@ -118,7 +118,7 @@ public:
     // Optional: Display function for debugging
     void display() const
     {
-        lock_guard<mutex> lock(mtx);
+        // lock_guard<mutex> lock(mtx);
         if (size == 0) {
             cout << "Queue is empty\n";
             return;

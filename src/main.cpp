@@ -2,6 +2,11 @@
 #include <cstddef> 
 #include <iostream>
 #include "../include/Queues.hpp"
+#include "../include/CircularQueue.hpp"
+#include "../include/StaticArrayQueue.hpp"
+#include "../include/DynamicArrayQueue.hpp"
+#include "../include/BoundedBlockingQueue.hpp"
+
 using namespace std;
 
 template<typename T>
